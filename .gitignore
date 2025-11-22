@@ -2,3 +2,4 @@
 .vscode
 .pre-commit-config.yaml
 result/
+inputs/

@@ -63,8 +63,14 @@
             inherit pkgs;
             preCommitHooks = pre-commit-hooks.lib.${system};
           };
+
+          package = import ./nix/package.nix {
+            inherit pkgs;
+            version = "0.0.1";
+          };
         in
         {
+          packages.default = package;
           devShells.default = import ./nix/dev-shell.nix {
             inherit pkgs;
             deps = devDeps;
@@ -75,6 +81,7 @@
 
     in
     {
+      packages = forAllSystems (system: (perSystem system).packages);
       devShells = forAllSystems (system: (perSystem system).devShells);
       checks = forAllSystems (system: (perSystem system).checks);
 
