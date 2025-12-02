@@ -41,6 +41,58 @@ type ProductID struct {
 	Value int
 }
 
+func getDigitsIntoArray(n int, digits *[10]int) int {
+	if n == 0 {
+		digits[0] = 0
+		return 1
+	}
+
+	length := 0
+	temp := n
+	for temp > 0 {
+		length++
+		temp /= 10
+	}
+
+	for i := length - 1; i >= 0; i-- {
+		digits[i] = n % 10
+		n /= 10
+	}
+
+	return length
+}
+
+func validateInt(n int) bool {
+	var digits [10]int
+	length := getDigitsIntoArray(n, &digits)
+
+	if length%2 != 0 {
+		return true
+	}
+
+	half := length / 2
+	for i := range half {
+		if digits[i] != digits[half+i] {
+			return true
+		}
+	}
+
+	return false
+}
+
+func Parse(s string) (*ProductID, error) {
+	if !validate(s) {
+		return nil, fmt.Errorf("invalid id %s", s)
+	}
+
+	val, err := strconv.Atoi(s)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ProductID{Value: val}, nil
+}
+
 func validate(s string) bool {
 	length := len(s)
 
@@ -55,17 +107,60 @@ func validate(s string) bool {
 	return true
 }
 
-func Parse(s string) (*ProductID, error) {
-	if !validate(s) {
-		return nil, fmt.Errorf("invalid id %s", s)
+func validateV2Int(n int) bool {
+	var digitsArray [10]int
+	length := getDigitsIntoArray(n, &digitsArray)
+	digits := digitsArray[:length]
+
+	if !validateIntFromDigitsSlice(digits) {
+		return false
 	}
 
-	val, err := strconv.Atoi(s)
-	if err != nil {
-		return nil, err
+	if length <= 1 {
+		return true
 	}
 
-	return &ProductID{Value: val}, nil
+	sequence := make([]int, 0, length)
+	left := 0
+	for i := range length {
+		c := digits[i]
+
+		if left == 0 && (len(sequence) == 0 || sequence[0] != c) {
+			sequence = append(sequence, c)
+			continue
+		}
+
+		if digits[left] == c && len(sequence) == i-left {
+			left = i
+		}
+
+		if i == length-1 && !slices.Equal(sequence, digits[left:]) {
+			return true
+		}
+
+		if c != digits[i-left] {
+			return true
+		}
+	}
+
+	return len(sequence) == length
+}
+
+func validateIntFromDigitsSlice(digits []int) bool {
+	length := len(digits)
+
+	if length%2 != 0 {
+		return true
+	}
+
+	half := length / 2
+	for i := range half {
+		if digits[i] != digits[half+i] {
+			return true
+		}
+	}
+
+	return false
 }
 
 func validateV2(s string) bool {
@@ -134,7 +229,7 @@ func solvePart1(puzzle string) any {
 		}
 
 		for i := low; i <= high; i++ {
-			if _, err := Parse(strconv.Itoa(i)); err != nil {
+			if !validateInt(i) {
 				result += i
 			}
 		}
@@ -160,7 +255,7 @@ func solvePart2(puzzle string) any {
 		}
 
 		for i := low; i <= high; i++ {
-			if _, err := ParseV2(strconv.Itoa(i)); err != nil {
+			if !validateV2Int(i) {
 				result += i
 			}
 		}
