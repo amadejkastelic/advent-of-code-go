@@ -79,9 +79,18 @@ func (c *aocClient) fetchSimpleInput(year int, day int) (string, error) {
 	}
 
 	doc := soup.HTMLParse(resp)
-	example := doc.Find("code").Text()
-	if example == "" {
+	blocks := doc.FindAll("code")
+
+	if len(blocks) == 0 {
 		return "", fmt.Errorf("could not find example input on the page")
+	}
+
+	var example string
+	for _, block := range blocks {
+		text := block.Text()
+		if len(text) > len(example) {
+			example = text
+		}
 	}
 
 	return example, nil
