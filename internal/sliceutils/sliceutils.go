@@ -51,3 +51,11 @@ func ToMap[T comparable, U any](input []T, valueFunc func(T) U) map[T]U {
 	}
 	return result
 }
+
+func Sum[T ~int | ~int64 | ~float64](input []T) T {
+	var sum T
+	for _, v := range input {
+		sum += v
+	}
+	return sum
+}
