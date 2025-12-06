@@ -67,3 +67,12 @@ func Reduce[T any, U any](input []T, reducer func(U, T) U, initial U) U {
 	}
 	return result
 }
+
+func All[T any](input []T, predicate func(T) bool) bool {
+	for _, v := range input {
+		if !predicate(v) {
+			return false
+		}
+	}
+	return true
+}

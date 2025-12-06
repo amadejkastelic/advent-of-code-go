@@ -80,6 +80,10 @@ func (s *Sheet) Result() int64 {
 	}, initial))
 }
 
+func (s *Sheet) String() string {
+	return fmt.Sprintf("Numbers: %v, Op: %s", s.numbers, s.op)
+}
+
 func sum(sheets []*Sheet) int64 {
 	res := int64(0)
 	for _, sheet := range sheets {
@@ -116,21 +120,22 @@ func solvePart2(puzzle string) any {
 	}
 
 	for i := 0; i < len(lines)-1; i++ {
-		j := 0
+		j := -1
 		k := 0
-		addedNum := false
-		for _, ch := range lines[i] {
-			if ch == ' ' && addedNum {
+		for l, ch := range lines[i] {
+			if l < len(lines[len(lines)-1]) && lines[len(lines)-1][l] != ' ' {
 				j++
 				k = 0
-				addedNum = false
-				continue
-			} else if ch != ' ' && len(sheets[j].numbers) <= k {
+			}
+
+			if ch != ' ' && len(sheets[j].numbers) <= k {
 				sheets[j].numbers = append(sheets[j].numbers, int(ch-'0'))
-				addedNum = true
 			} else if ch != ' ' {
 				sheets[j].numbers[k] = sheets[j].numbers[k]*10 + int(ch-'0')
-				addedNum = true
+			} else if i == 0 && sliceutils.All(sheets[j].numbers, func(n int) bool {
+				return n == 0
+			}) {
+				sheets[j].numbers = append(sheets[j].numbers, 0)
 			}
 			k++
 		}
