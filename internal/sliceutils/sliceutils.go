@@ -59,3 +59,11 @@ func Sum[T ~int | ~int64 | ~float64](input []T) T {
 	}
 	return sum
 }
+
+func Reduce[T any, U any](input []T, reducer func(U, T) U, initial U) U {
+	result := initial
+	for _, v := range input {
+		result = reducer(result, v)
+	}
+	return result
+}
