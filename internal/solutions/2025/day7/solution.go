@@ -106,33 +106,37 @@ func solvePart1(area [][]rune, start *Point) any {
 }
 
 func solvePart2(area [][]rune, start *Point) any {
-	result := 0
+	ways := make(map[Point]int)
+	ways[*start] = 1
 
-	q := utils.Queue[*Point]{}
+	for y := start.Y; y < len(area)-1; y++ {
+		for x := 0; x < len(area[0]); x++ {
+			pos := Point{x, y}
+			count := ways[pos]
+			if count == 0 {
+				continue
+			}
 
-	q.Push(start)
-
-	for q.Len() > 0 {
-		curr := q.Pop()
-
-		if curr.Y >= len(area)-1 {
-			continue
-		}
-
-		switch area[curr.Y+1][curr.X] {
-		case '.':
-			next := &Point{curr.X, curr.Y + 1}
-			q.Push(next)
-		case '^':
-			for _, dir := range directions {
-				if dir.X+curr.X < 0 || dir.X+curr.X >= len(area[0]) {
-					continue
+			below := area[y+1][x]
+			switch below {
+			case '^':
+				for _, dir := range directions {
+					nx := x + dir.X
+					if nx >= 0 && nx < len(area[0]) {
+						next := Point{nx, y + 1}
+						ways[next] += count
+					}
 				}
-				next := &Point{curr.X + dir.X, curr.Y + 1}
-				q.Push(next)
-				result++
+			case '.', '|':
+				next := Point{x, y + 1}
+				ways[next] += count
 			}
 		}
+	}
+
+	result := 0
+	for x := 0; x < len(area[0]); x++ {
+		result += ways[Point{x, len(area) - 1}]
 	}
 
 	return result

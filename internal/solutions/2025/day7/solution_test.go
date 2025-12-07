@@ -28,6 +28,6 @@ func TestSolve_2025_Day3(t *testing.T) {
 	area, startP := parseInput(puzzle)
 	assert.Equal(t, 21, solvePart1(area, startP))
 
-	//area, startP = parseInput(puzzle)
-	//assert.Equal(t, 40, solvePart2(area, startP))
+	area, startP = parseInput(puzzle)
+	assert.Equal(t, 40, solvePart2(area, startP))
 }
