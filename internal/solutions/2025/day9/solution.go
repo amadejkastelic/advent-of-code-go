@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -108,44 +109,118 @@ func (p *Polygon) Contains(point *Point) bool {
 	return count%2 == 1
 }
 
-func solvePart2(points []*Point, polygon *Polygon) any {
-	maxArea := 0
+func polygonEdgeCrossesRectangle(rectP1, rectP2, segP1, segP2 *Point) bool {
+	minX, maxX := min(rectP1.X, rectP2.X), max(rectP1.X, rectP2.X)
+	minY, maxY := min(rectP1.Y, rectP2.Y), max(rectP1.Y, rectP2.Y)
 
-	for i, p1 := range points {
-		for j := i + 1; j < len(points); j++ {
-			p2 := points[j]
+	if (segP1.X < minX && segP2.X < minX) || (segP1.X > maxX && segP2.X > maxX) {
+		return false
+	}
+	if (segP1.Y < minY && segP2.Y < minY) || (segP1.Y > maxY && segP2.Y > maxY) {
+		return false
+	}
 
-			if p1.X == p2.X || p1.Y == p2.Y {
-				continue
-			}
+	onBoundary := func(p *Point) bool {
+		return (p.X == minX || p.X == maxX) && p.Y >= minY && p.Y <= maxY ||
+			(p.Y == minY || p.Y == maxY) && p.X >= minX && p.X <= maxX
+	}
 
-			corners := []*Point{
-				{X: p1.X, Y: p1.Y},
-				{X: p1.X, Y: p2.Y},
-				{X: p2.X, Y: p1.Y},
-				{X: p2.X, Y: p2.Y},
-			}
-
-			hasEdges := sliceutils.All(corners, polygon.Contains)
-			if !hasEdges {
-				continue
-			}
-
-			edges := []*Point{}
-			for x := min(p1.X, p2.X); x <= max(p1.X, p2.X); x++ {
-				edges = append(edges, &Point{X: x, Y: p1.Y})
-				edges = append(edges, &Point{X: x, Y: p2.Y})
-			}
-			for y := min(p1.Y, p2.Y); y <= max(p1.Y, p2.Y); y++ {
-				edges = append(edges, &Point{X: p1.X, Y: y})
-				edges = append(edges, &Point{X: p2.X, Y: y})
-			}
-
-			if hasEdges && sliceutils.All(edges, polygon.Contains) {
-				maxArea = max(maxArea, p1.Area(p2))
-			}
+	if onBoundary(segP1) && onBoundary(segP2) {
+		if (segP1.X == segP2.X && (segP1.X == minX || segP1.X == maxX)) ||
+			(segP1.Y == segP2.Y && (segP1.Y == minY || segP1.Y == maxY)) {
+			return false
 		}
 	}
 
-	return maxArea
+	rectEdges := [][2]*Point{
+		{{X: minX, Y: minY}, {X: maxX, Y: minY}}, // bottom
+		{{X: maxX, Y: minY}, {X: maxX, Y: maxY}}, // right
+		{{X: maxX, Y: maxY}, {X: minX, Y: maxY}}, // top
+		{{X: minX, Y: maxY}, {X: minX, Y: minY}}, // left
+	}
+
+	for _, edge := range rectEdges {
+		if crosses(segP1, segP2, edge[0], edge[1]) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func crosses(p1, p2, p3, p4 *Point) bool {
+	ccw := func(a, b, c *Point) int {
+		val := (b.X-a.X)*(c.Y-a.Y) - (b.Y-a.Y)*(c.X-a.X)
+		if val > 0 {
+			return 1
+		}
+		if val < 0 {
+			return -1
+		}
+		return 0
+	}
+
+	d1 := ccw(p3, p4, p1)
+	d2 := ccw(p3, p4, p2)
+	d3 := ccw(p1, p2, p3)
+	d4 := ccw(p1, p2, p4)
+
+	return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
+		((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))
+}
+
+type Pair struct {
+	p1, p2 *Point
+	area   int
+}
+
+func NewPair(p1, p2 *Point) Pair {
+	return Pair{p1: p1, p2: p2, area: p1.Area(p2)}
+}
+
+func solvePart2(points []*Point, polygon *Polygon) any {
+	areas := make([]Pair, 0, len(points)*(len(points)-1)/2)
+	for i, p1 := range points {
+		for j := i + 1; j < len(points); j++ {
+			areas = append(areas, NewPair(p1, points[j]))
+		}
+	}
+
+	slices.SortFunc(areas, func(a, b Pair) int {
+		return b.area - a.area
+	})
+
+	for _, area := range areas {
+		p1, p2 := area.p1, area.p2
+
+		if p1.X == p2.X || p1.Y == p2.Y {
+			continue
+		}
+
+		corners := []*Point{
+			{X: p1.X, Y: p1.Y},
+			{X: p1.X, Y: p2.Y},
+			{X: p2.X, Y: p1.Y},
+			{X: p2.X, Y: p2.Y},
+		}
+
+		if !sliceutils.All(corners, polygon.Contains) {
+			continue
+		}
+
+		valid := true
+		for k := 0; k < len(polygon.Vertices); k++ {
+			next := (k + 1) % len(polygon.Vertices)
+			if polygonEdgeCrossesRectangle(p1, p2, polygon.Vertices[k], polygon.Vertices[next]) {
+				valid = false
+				break
+			}
+		}
+
+		if valid {
+			return area.area
+		}
+	}
+
+	return 0
 }
