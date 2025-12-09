@@ -178,7 +178,7 @@ func NewPair(p1, p2 *Point) Pair {
 	return Pair{p1: p1, p2: p2, area: p1.Area(p2)}
 }
 
-func solvePart2(points []*Point, polygon *Polygon) any {
+func solvePart2(points []*Point, polygon *Polygon) int {
 	areas := make([]Pair, 0, len(points)*(len(points)-1)/2)
 	for i, p1 := range points {
 		for j := i + 1; j < len(points); j++ {
