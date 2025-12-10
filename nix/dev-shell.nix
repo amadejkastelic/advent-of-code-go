@@ -2,6 +2,7 @@
   pkgs,
   deps,
   preCommitCheck,
+  extraShellHook ? "",
 }:
 pkgs.mkShell {
   nativeBuildInputs = deps;
@@ -12,5 +13,6 @@ pkgs.mkShell {
 
   shellHook = ''
     ${preCommitCheck.shellHook}
+    ${extraShellHook}
   '';
 }

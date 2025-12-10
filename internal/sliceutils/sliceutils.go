@@ -76,3 +76,43 @@ func All[T any](input []T, predicate func(T) bool) bool {
 	}
 	return true
 }
+
+func Combinations[T any](input []T, n int) [][]T {
+	var helper func(int, int, []T)
+	result := [][]T{}
+
+	helper = func(start int, n int, current []T) {
+		if n == 0 {
+			combination := make([]T, len(current))
+			copy(combination, current)
+			result = append(result, combination)
+			return
+		}
+		for i := start; i <= len(input)-n; i++ {
+			helper(i+1, n-1, append(current, input[i]))
+		}
+	}
+
+	helper(0, n, []T{})
+	return result
+}
+
+func CombinationsWithReplacement[T any](input []T, n int) [][]T {
+	var helper func(int, int, []T)
+	result := [][]T{}
+
+	helper = func(start int, remaining int, current []T) {
+		if remaining == 0 {
+			combination := make([]T, len(current))
+			copy(combination, current)
+			result = append(result, combination)
+			return
+		}
+		for i := start; i < len(input); i++ {
+			helper(i, remaining-1, append(current, input[i]))
+		}
+	}
+
+	helper(0, n, []T{})
+	return result
+}

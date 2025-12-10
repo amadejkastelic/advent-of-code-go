@@ -50,6 +50,7 @@
             pkgs.git
             pkgs.go
             pkgs.gnumake
+            pkgs.lp_solve
           ];
 
           devDeps = buildDeps ++ [
@@ -58,6 +59,11 @@
             pkgs.gopls
             pkgs.golines
           ];
+
+          shellHook = ''
+            export CGO_CFLAGS="-I${pkgs.lp_solve}/include/lpsolve"
+            export CGO_LDFLAGS="-L${pkgs.lp_solve}/lib -llpsolve55"
+          '';
 
           preCommitCheck = import ./nix/pre-commit.nix {
             inherit pkgs;
@@ -75,6 +81,7 @@
             inherit pkgs;
             deps = devDeps;
             preCommitCheck = preCommitCheck;
+            extraShellHook = shellHook;
           };
           checks.pre-commit-check = preCommitCheck;
         };

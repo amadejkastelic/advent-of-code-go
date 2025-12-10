@@ -29,3 +29,16 @@ func (pq *Queue[T]) Pop() T {
 	*pq = old[0 : n-1]
 	return item.value
 }
+
+// PopFirst removes and returns the first element (FIFO behavior)
+func (pq *Queue[T]) PopFirst() T {
+	old := *pq
+	item := old[0]
+	item.index = -1
+	*pq = old[1:]
+	// Update indices for remaining items
+	for i := range *pq {
+		(*pq)[i].index = i
+	}
+	return item.value
+}
