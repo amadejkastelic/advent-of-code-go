@@ -9,9 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/draffensperger/golp"
+
 	"github.com/amadejkastelic/advent-of-code-go/internal/sliceutils"
 	"github.com/amadejkastelic/advent-of-code-go/internal/utils"
-	"github.com/draffensperger/golp"
 )
 
 const maxPresses = 1000
