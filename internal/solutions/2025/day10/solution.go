@@ -7,7 +7,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/amadejkastelic/advent-of-code-go/internal/sliceutils"
@@ -199,26 +198,10 @@ func solvePart1(machines []*Machine) any {
 }
 
 func solvePart2(machines []*Machine) any {
-	results := make(chan int, len(machines))
-	var wg sync.WaitGroup
+	res := 0
 
 	for _, m := range machines {
-		wg.Add(1)
-		go func(machine *Machine) {
-			defer wg.Done()
-			result := machine.NumButtonPressesToReachJoltage()
-			results <- result
-		}(m)
-	}
-
-	go func() {
-		wg.Wait()
-		close(results)
-	}()
-
-	res := 0
-	for r := range results {
-		res += r
+		res += m.NumButtonPressesToReachJoltage()
 	}
 
 	return res
