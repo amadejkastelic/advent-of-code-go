@@ -63,6 +63,7 @@
           shellHook = ''
             export CGO_CFLAGS="-I${pkgs.lp_solve}/include/lpsolve"
             export CGO_LDFLAGS="-L${pkgs.lp_solve}/lib -llpsolve55"
+            export LD_LIBRARY_PATH="${pkgs.lp_solve}/lib:''${LD_LIBRARY_PATH:-}"
           '';
 
           preCommitCheck = import ./nix/pre-commit.nix {
