@@ -67,7 +67,7 @@
           '';
 
           preCommitCheck = import ./nix/pre-commit.nix {
-            inherit pkgs;
+            inherit pkgs shellHook;
             preCommitHooks = pre-commit-hooks.lib.${system};
           };
 
